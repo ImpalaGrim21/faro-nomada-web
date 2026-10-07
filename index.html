@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a101b">
+<meta name="description" content="Orienta la luz, prepara un faro ambulante y restaura una red de islas. Juego original en Godot.">
+<title>Faro Nómada</title>
+<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#0a101b;color:#f0ede2;font-family:system-ui,sans-serif;overflow:hidden}
+body{display:grid;place-items:center;background:radial-gradient(ellipse at 50% 30%,#183743 0,#0a101b 68%)}
+#frame{position:relative;width:min(100vw,calc(100dvh * 9 / 16));height:100dvh;max-width:900px;background:#0a101b;box-shadow:0 0 80px #0006}
+canvas{display:block;width:100%;height:100%;outline:none;touch-action:none}
+#status{position:absolute;inset:0;display:grid;place-items:center;padding:24px;background:#0a101bf5;z-index:2}
+.card{max-width:360px;width:100%;padding:28px;background:#142332;border:1px solid #34505d;border-radius:20px;text-align:center}
+h1{font-size:28px;font-weight:600;margin:0 0 16px;color:#f2c56f;letter-spacing:.04em}
+p{line-height:1.55;color:#bcd0d5;margin:12px 0}button{width:100%;padding:15px 20px;border:0;border-radius:12px;background:#69d1ba;color:#0a101b;font:600 17px system-ui;cursor:pointer;min-height:48px;margin-top:16px}
+button:focus-visible{outline:3px solid #f2c56f;outline-offset:4px}button:disabled{background:#34505d;color:#bcd0d5;cursor:wait}
+progress{width:100%;height:12px;accent-color:#69d1ba;margin:16px 0 4px}.small{font-size:13px}#error{color:#ffb899;white-space:pre-wrap;overflow-wrap:anywhere}
+@supports not (height:100dvh){#frame{height:100vh;width:min(100vw,calc(100vh * 9 / 16))}}
+</style>
+</head>
+<body>
+<main id="frame">
+<canvas id="canvas" tabindex="0" aria-label="Faro Nómada, juego interactivo"></canvas>
+<section id="status" aria-live="polite">
+<div class="card"><h1>FARO NÓMADA</h1><p>Una luz abre el camino.<br>Una estación devuelve la vida.</p>
+<button id="play" type="button">Jugar</button><progress id="progress" hidden></progress><p id="message">Ratón o pantalla táctil.</p><p id="error" hidden></p>
+<p class="small">Tu avance se guarda en este navegador.</p></div>
+</section>
+</main>
+<script src="index.js"></script>
+<script>
+const engine = new Engine({"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":10364712,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4});
+const status = document.getElementById('status');
+const play = document.getElementById('play');
+const progress = document.getElementById('progress');
+const message = document.getElementById('message');
+const error = document.getElementById('error');
+function fail(reason){console.error(reason);error.textContent=String(reason?.message||reason);error.hidden=false;message.textContent='No se pudo abrir el juego. Comprueba la conexión y vuelve a intentar.';play.disabled=false;play.textContent='Recargar';play.onclick=()=>location.reload();}
+play.onclick=()=>{
+ const missing=Engine.getMissingFeatures({threads:false});
+ if(missing.length){fail('Este navegador necesita WebGL 2 y WebAssembly. Prueba una versión reciente de Chrome, Edge o Firefox.');return;}
+ play.disabled=true;play.textContent='Preparando la luz…';progress.hidden=false;message.textContent='Cargando el juego. La primera vez puede tardar unos segundos.';
+ engine.startGame({canvas:document.getElementById('canvas'),onProgress:(current,total)=>{if(total>0){progress.max=total;progress.value=current;}else{progress.removeAttribute('value');}},onExit:()=>{status.hidden=false;status.style.display='grid';play.disabled=false;play.textContent='Volver a jugar';play.onclick=()=>location.reload();message.textContent='Tu partida confirmada queda guardada en este navegador.';}})
+ .then(()=>{status.style.display='none';document.getElementById('canvas').focus();}).catch(fail);
+};
+</script>
+</body></html>
+
